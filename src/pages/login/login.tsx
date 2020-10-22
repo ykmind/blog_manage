@@ -7,7 +7,16 @@ import React from 'react';
 import './login.less';
 import { Form, Input, Button } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useHistory, useDispatch } from 'umi';
+import {
+  useHistory,
+  useDispatch,
+  useStore,
+  Redirect,
+  UserModelState,
+  UserModelType,
+  ConnectRC,
+  connect,
+} from 'umi';
 import { login } from '@/services/users';
 import { message } from 'antd';
 
@@ -16,9 +25,17 @@ export type LoginInfoType = {
   password: string;
 };
 
-const Login = () => {
+export interface LoginProps {
+  user: UserModelType;
+}
+
+const Login: ConnectRC<LoginProps> = ({ user, dispatch }) => {
   const history = useHistory();
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
+  // const store = useStore();
+  // if (store.getState().user.token.length != 0) {
+  //   return <Redirect to="/" />;
+  // }
   const onFinish = async (values: LoginInfoType) => {
     const res = await login(values);
     if (res.code !== 200) {
@@ -31,7 +48,7 @@ const Login = () => {
   };
   const saveUserInfo = (nickname: string, token: string) => {
     dispatch({
-      type: 'user/saveUser',
+      type: 'user/setUser',
       payload: {
         nickname,
         token,
@@ -75,4 +92,6 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default connect(({ user }: { user: UserModelType }) => ({ user }))(
+  Login,
+);

@@ -12,7 +12,7 @@ export interface UserModelType {
     logout: Effect;
   };
   reducers: {
-    saveUser: Reducer<UserModelState>;
+    setUser: Reducer<UserModelState>;
   };
   // subscriptions: { setup: Subscription };
 }
@@ -29,11 +29,10 @@ const IndexModel: UserModelType = {
     *logout(action, { call, put }) {},
   },
   reducers: {
-    saveUser(state, action) {
-      return {
-        ...state,
-        ...action.payload,
-      };
+    setUser(state, action) {
+      let newState = { ...state, ...action.payload };
+      localStorage.setItem('user', newState);
+      return newState;
     },
   },
 };

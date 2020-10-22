@@ -39,3 +39,6 @@ umi + dva + react + typescript
 └── yarn.lock
 ```
 
+### Question
+
+1. 数据持久化有问题, redux-persist失效

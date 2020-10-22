@@ -1,6 +1,8 @@
 import { defineConfig } from 'umi';
 
 export default defineConfig({
+  // dynamicImport: {},
+  // dva: { skipModelValidate: true },
   nodeModulesTransform: {
     type: 'none',
   },
