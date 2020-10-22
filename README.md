@@ -13,7 +13,7 @@ umi + dva + react + typescript
 
 ### 目录结构
 
-├── README.md
+```tex
 ├── mock
 │   └── login.ts
 ├── package.json
@@ -37,3 +37,5 @@ umi + dva + react + typescript
 ├── tsconfig.json
 ├── typings.d.ts
 └── yarn.lock
+```
+
