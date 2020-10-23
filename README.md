@@ -41,4 +41,4 @@ umi + dva + react + typescript
 
 ### Question
 
-1. 数据持久化有问题, redux-persist失效
+1. 数据持久化有问题, umi3中redux-persist配置失效, 手动在ruducer的时候存储到了localstorage.

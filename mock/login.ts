@@ -15,6 +15,12 @@ export default {
     } else {
       res.end('error: please enter right username and password');
     }
-    console.log();
+  },
+  'POST /api/logout': (req: any, res: any) => {
+    const data = {
+      code: 200,
+      message: '退出登录',
+    };
+    res.status(200).send(data);
   },
 };

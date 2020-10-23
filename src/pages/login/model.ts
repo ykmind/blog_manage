@@ -1,4 +1,5 @@
-import { Effect, ImmerReducer, Reducer, Subscription } from 'umi';
+import { logout } from '@/services/users';
+import { Effect, Reducer, Subscription } from 'umi';
 
 export interface UserModelState {
   nickname: string;
@@ -26,12 +27,15 @@ const IndexModel: UserModelType = {
   },
 
   effects: {
-    *logout(action, { call, put }) {},
+    *logout(action, { call, put }) {
+      yield call(logout);
+      yield put({ type: 'setUser', payload: { nickname: '', token: '' } });
+    },
   },
   reducers: {
     setUser(state, action) {
       let newState = { ...state, ...action.payload };
-      localStorage.setItem('user', newState);
+      localStorage.setItem('user', JSON.stringify(newState));
       return newState;
     },
   },

@@ -1,5 +1,11 @@
 import React from 'react';
-import { ConnectRC, UserModelType, connect, useHistory } from 'umi';
+import {
+  ConnectRC,
+  UserModelType,
+  connect,
+  useHistory,
+  useDispatch,
+} from 'umi';
 import { Button } from 'antd';
 
 export interface IndexProps {
@@ -8,9 +14,11 @@ export interface IndexProps {
 
 const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
   const history = useHistory();
+  const dispatch = useDispatch();
   const logout = () => {
-    console.log('调用退出接口,清空用户,dva和缓存,然后跳转到登录页');
-    history.push('/login');
+    Promise.resolve(dispatch({ type: 'user/logout' })).then(() => {
+      history.push('/login');
+    });
   };
   return (
     <div>

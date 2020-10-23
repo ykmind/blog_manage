@@ -31,11 +31,6 @@ export interface LoginProps {
 
 const Login: ConnectRC<LoginProps> = ({ user, dispatch }) => {
   const history = useHistory();
-  // const dispatch = useDispatch();
-  // const store = useStore();
-  // if (store.getState().user.token.length != 0) {
-  //   return <Redirect to="/" />;
-  // }
   const onFinish = async (values: LoginInfoType) => {
     const res = await login(values);
     if (res.code !== 200) {
