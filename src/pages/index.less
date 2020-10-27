@@ -25,36 +25,88 @@
   }
   .todo-list-wrap {
     display: flex;
+    position: relative;
     height: 90%;
+    margin-top: 20px;
     justify-content: space-between;
     .list-box {
-      position: relative;
+      //   position: relative;
       width: 40%;
-      height: 85%;
+      height: 81%;
       margin: 16px 20px;
       padding: 16px;
       background-color: rgba(248, 239, 239, 0.89);
+      overflow-y: auto;
       .border;
+      .mirror-div {
+        display: none;
+        // display: inline-block;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        margin: 5px;
+        padding: 0 10px;
+        box-shadow: 0 0 5px rgb(10, 183, 236);
+        .border;
+      }
     }
     .list-type {
       position: absolute;
-      bottom: -60px;
-      left: 50%;
+      top: -10px;
       font-size: 1.6rem;
-      transform: translate(-50%);
+      &:nth-of-type(1) {
+        left: 20%;
+      }
+      &:nth-of-type(2) {
+        right: 20%;
+      }
     }
   }
-  .todo-need {
+  .todo-direction {
+    position: relative;
+    width: 60px;
+    height: 5px;
+    background-color: rgb(8, 125, 235);
+    align-self: center;
+    transform: translate(0, -40px);
+    .todo-arrow {
+      position: absolute;
+      right: -10px;
+      top: -7px;
+      border-style: solid;
+      border-width: 10px 0 10px 10px;
+      border-color: transparent transparent transparent rgb(8, 125, 235);
+    }
   }
-  .todo-done {
-  }
+  //   .todo-need {
+  //   }
+  //   .todo-done {
+  //   }
   .todo-list-item {
+    display: inline-block;
     width: auto;
-    height: 18px;
+    height: 30px;
+    line-height: 30px;
     margin: 5px;
-    padding: 5px 10px;
+    padding: 0 10px;
     background-color: #fff;
-    cursor: pointer;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    user-select: none;
+    overflow: hidden;
     .border;
+  }
+  .invisible {
+    display: none;
+  }
+  .dragging {
+    border: 1px solid orange;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .wrap-div {
+    display: inline-block;
   }
 }

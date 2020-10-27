@@ -13,33 +13,45 @@ export interface IndexProps {
   user: UserModelType;
 }
 
+export interface PositionProps {
+  x: number;
+  y: number;
+  xl: number;
+  yt: number;
+}
+
 const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [item, setItem] = useState<string>('');
   const [needTodoList, setNeedTodoList] = useState<string[]>(['react', 'js']);
   const [doneList, setDoneList] = useState<string[]>(['docker', 'nginx']);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragRefs = useRef<HTMLSpanElement[]>(new Array(needTodoList.length));
-  const mirrorDiv = useRef<HTMLDivElement>(null);
-  const wrapDiv = useRef<HTMLDivElement>(null);
-  const addDiv = useRef<HTMLDivElement>(null);
   const [dragIndex, setDragIndex] = useState<number>(0);
-
-  useEffect(() => {
-    const dragEl = dragRefs.current[dragIndex];
-    const wrapEl = wrapDiv.current;
-    if (!dragEl) return;
-    if (!wrapEl) return;
-    dragEl.addEventListener('dragstart', dragStart);
-    dragEl.addEventListener('dragend', dragEnd);
-    wrapEl.addEventListener('dragover', dragOver);
-    wrapEl.addEventListener('dragover', dragLeave);
-    wrapEl.addEventListener('dragover', dragEnter);
-    wrapEl.addEventListener('drop', dragDrop);
+  const mirrorDiv = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<PositionProps>({
+    x: 0,
+    y: 0,
+    xl: 0,
+    yt: 0,
   });
   useEffect(() => {
-    console.log(dragIndex);
-  }, [dragIndex]);
+    document.onmousemove = function(e: any) {
+      if (isDragging) {
+        const el = dragRefs.current[dragIndex];
+        const { x, y, xl, yt } = position;
+        let newX = e.clientX;
+        let newY = e.clientY;
+        let distanceX = newX - (x - xl);
+        let distanceY = newY - (y - yt);
+        el.style.position = 'absolute';
+        el.style.left = distanceX + 'px';
+        el.style.top = distanceY + 'px';
+      }
+    };
+  });
+
   const logout = () => {
     Promise.resolve(dispatch({ type: 'user/logout' })).then(() => {
       history.push('/login');
@@ -55,23 +67,22 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
       addItem();
     }
   };
-  const mousedown = (
+  const moveStart = (
     e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
     index: number,
   ) => {
-    const dragEl = dragRefs.current[index];
-    const mirrorEl = mirrorDiv.current;
+    const el = dragRefs.current[index];
     setDragIndex(index);
-    showPlaceholderDiv(dragEl);
-    dragEl.style.cursor = 'move';
-    mirrorEl!.className = 'mirror-div';
-  };
-  const mouseup = (
-    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
-    index: number,
-  ) => {
-    const mirrorEl = mirrorDiv.current;
-    mirrorEl!.className = 'invisible';
+    let initPosition: PositionProps = {
+      x: e.clientX,
+      y: e.clientY,
+      xl: el.offsetLeft,
+      yt: el.offsetTop,
+    };
+    setPosition(initPosition);
+    setIsDragging(true);
+    showPlaceholderDiv(el);
+    el.style.cursor = 'move';
   };
   const showPlaceholderDiv = (el: HTMLSpanElement) => {
     const currentCss: CSSStyleDeclaration = getComputedStyle(el, null);
@@ -79,37 +90,19 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
     mirrorDiv.current!.style.width = width;
     mirrorDiv.current!.style.display = 'inline-block';
   };
-  const dragStart = () => {
-    const dragEl = dragRefs.current[dragIndex];
-    dragEl.className += ' dragging';
-    setTimeout(() => {
-      dragEl.className = 'invisible'; // 注意异步隐藏
-    }, 0);
-  };
-  const dragEnd = () => {
-    const dragEl = dragRefs.current[dragIndex];
-    const mirrorEl = mirrorDiv.current;
-    dragEl.className = 'todo-list-item';
-    dragEl.style.cursor = 'default';
-    mirrorEl!.className = 'invisible';
-  };
-  const dragOver = (e: any) => {
-    e.preventDefault();
-  };
-  const dragLeave = (e: any) => {
-    const dropEl = mirrorDiv.current;
-    dropEl!.className = 'mirror-div';
-  };
-  const dragEnter = (e: any) => {
-    e.preventDefault();
-  };
-  const dragDrop = (e: any) => {
-    const dragEl = dragRefs.current[dragIndex];
-    const dropEl = mirrorDiv.current;
-    const addEl = addDiv.current;
-    console.log('dragDrop -> dragEl', dragEl);
-    addEl!.append(dragEl);
-    dropEl!.className = 'invisible';
+  const moveEnd = (
+    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
+    index: number,
+  ) => {
+    const el = dragRefs.current[index];
+    el.style.cursor = 'default';
+    el.style.position = 'static';
+    console.log('isDragging', isDragging);
+    if (isDragging) {
+      console.log('接收数据到doneList, 并从todoList中删除该dom');
+    }
+    setIsDragging(false);
+    mirrorDiv.current!.style.display = 'none';
   };
   return (
     <div className="todo">
@@ -134,9 +127,8 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
                 ref={(el: HTMLSpanElement) => {
                   dragRefs.current[index] = el;
                 }}
-                onMouseDown={e => mousedown(e, index)}
-                onMouseUp={e => mouseup(e, index)}
-                draggable="true"
+                onMouseDown={e => moveStart(e, index)}
+                onMouseUp={e => moveEnd(e, index)}
               >
                 {todo}
               </span>
@@ -148,16 +140,14 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
           <div className="todo-arrow" />
         </div>
         {/* 小坑点: 拖拽一个div到下面div的时候, 并不会触发事件,被拖拽的div挡住了... */}
-        <div className="list-box todo-done" ref={wrapDiv}>
-          <div className="wrap-div" ref={addDiv}>
-            {doneList.map((todo, index) => {
-              return (
-                <span className="todo-list-item" key={todo}>
-                  {todo}
-                </span>
-              );
-            })}
-          </div>
+        <div className="list-box todo-done">
+          {doneList.map((todo, index) => {
+            return (
+              <span className="todo-list-item" key={todo}>
+                {todo}
+              </span>
+            );
+          })}
           <div className="mirror-div" ref={mirrorDiv} />
         </div>
         <p className="list-type">已完成</p>
