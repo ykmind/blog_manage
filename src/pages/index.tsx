@@ -25,7 +25,9 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
   const addDiv = useRef<HTMLDivElement>(null);
   const [dragIndex, setDragIndex] = useState<number>(0);
   useEffect(() => {
+    console.log('调用接口初始化neecTodoList和doneList');
     setNeedTodoList(['react', 'index']);
+    setDoneList(['docker', 'nginx']);
   }, []);
   useEffect(() => {
     const dragEl = dragRefs.current[dragIndex];
@@ -109,17 +111,14 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
     e.preventDefault();
   };
   const dragDrop = (e: any) => {
-    console.log('dragDrop -> dragRefs', dragRefs);
-    console.log('dragDrop -> dragIndex', dragIndex);
-    console.log('-----');
     const dragEl = dragRefs.current[dragIndex];
     const dropEl = mirrorDiv.current;
     const addEl = addDiv.current;
     addEl!.append(dragEl);
     dropEl!.className = 'invisible';
-  };
-  const handleNeedTodoList = () => {
-    // 处理拖拽后的计划中数据
+    console.log(
+      '调用接口去改变数据库中的数据, 每次刷新页面的时候重新在useEffect中初始化needTodolist和doneList即可',
+    );
   };
   return (
     <div className="todo">
