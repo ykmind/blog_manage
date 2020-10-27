@@ -17,14 +17,16 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [item, setItem] = useState<string>('');
-  const [needTodoList, setNeedTodoList] = useState<string[]>(['react', 'js']);
+  const [needTodoList, setNeedTodoList] = useState<string[]>([]);
   const [doneList, setDoneList] = useState<string[]>(['docker', 'nginx']);
   const dragRefs = useRef<HTMLSpanElement[]>(new Array(needTodoList.length));
   const mirrorDiv = useRef<HTMLDivElement>(null);
   const wrapDiv = useRef<HTMLDivElement>(null);
   const addDiv = useRef<HTMLDivElement>(null);
   const [dragIndex, setDragIndex] = useState<number>(0);
-
+  useEffect(() => {
+    setNeedTodoList(['react', 'index']);
+  }, []);
   useEffect(() => {
     const dragEl = dragRefs.current[dragIndex];
     const wrapEl = wrapDiv.current;
@@ -33,13 +35,18 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
     dragEl.addEventListener('dragstart', dragStart);
     dragEl.addEventListener('dragend', dragEnd);
     wrapEl.addEventListener('dragover', dragOver);
-    wrapEl.addEventListener('dragover', dragLeave);
-    wrapEl.addEventListener('dragover', dragEnter);
+    wrapEl.addEventListener('dragleave', dragLeave);
+    wrapEl.addEventListener('dragenter', dragEnter);
     wrapEl.addEventListener('drop', dragDrop);
+    return () => {
+      wrapEl.removeEventListener('drop', dragDrop);
+      wrapEl.removeEventListener('dragover', dragOver);
+      wrapEl.removeEventListener('dragleave', dragLeave);
+      wrapEl.removeEventListener('dragenter', dragEnter);
+      dragEl.removeEventListener('dragstart', dragStart);
+      dragEl.removeEventListener('dragend', dragEnd);
+    };
   });
-  useEffect(() => {
-    console.log(dragIndex);
-  }, [dragIndex]);
   const logout = () => {
     Promise.resolve(dispatch({ type: 'user/logout' })).then(() => {
       history.push('/login');
@@ -61,15 +68,12 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
   ) => {
     const dragEl = dragRefs.current[index];
     const mirrorEl = mirrorDiv.current;
-    setDragIndex(index);
+    setDragIndex(() => index);
     showPlaceholderDiv(dragEl);
     dragEl.style.cursor = 'move';
     mirrorEl!.className = 'mirror-div';
   };
-  const mouseup = (
-    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
-    index: number,
-  ) => {
+  const mouseup = () => {
     const mirrorEl = mirrorDiv.current;
     mirrorEl!.className = 'invisible';
   };
@@ -89,6 +93,7 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
   const dragEnd = () => {
     const dragEl = dragRefs.current[dragIndex];
     const mirrorEl = mirrorDiv.current;
+    if (!dragEl) return;
     dragEl.className = 'todo-list-item';
     dragEl.style.cursor = 'default';
     mirrorEl!.className = 'invisible';
@@ -104,12 +109,17 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
     e.preventDefault();
   };
   const dragDrop = (e: any) => {
+    console.log('dragDrop -> dragRefs', dragRefs);
+    console.log('dragDrop -> dragIndex', dragIndex);
+    console.log('-----');
     const dragEl = dragRefs.current[dragIndex];
     const dropEl = mirrorDiv.current;
     const addEl = addDiv.current;
-    console.log('dragDrop -> dragEl', dragEl);
     addEl!.append(dragEl);
     dropEl!.className = 'invisible';
+  };
+  const handleNeedTodoList = () => {
+    // 处理拖拽后的计划中数据
   };
   return (
     <div className="todo">
@@ -130,13 +140,13 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
             return (
               <span
                 className="todo-list-item"
-                key={todo}
+                key={index}
                 ref={(el: HTMLSpanElement) => {
                   dragRefs.current[index] = el;
                 }}
-                onMouseDown={e => mousedown(e, index)}
-                onMouseUp={e => mouseup(e, index)}
                 draggable="true"
+                onMouseDown={e => mousedown(e, index)}
+                onMouseUp={() => mouseup()}
               >
                 {todo}
               </span>
@@ -147,7 +157,6 @@ const IndexPage: ConnectRC<IndexProps> = ({ user }) => {
         <div className="todo-direction">
           <div className="todo-arrow" />
         </div>
-        {/* 小坑点: 拖拽一个div到下面div的时候, 并不会触发事件,被拖拽的div挡住了... */}
         <div className="list-box todo-done" ref={wrapDiv}>
           <div className="wrap-div" ref={addDiv}>
             {doneList.map((todo, index) => {
